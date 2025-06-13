@@ -3,8 +3,8 @@
 1. **Clone o repositório:**
 
    ```bash
-   git clone https://github.com/usuario/portal-labs-compose.git
-   cd portal-labs-compose
+   git clone git@github.com:LucasIbiapino7/gerenciador-labs-docker-v1.git
+   cd gerenciador-labs-docker-v1
    ```
 
 2. **Crie o arquivo `.env`:**

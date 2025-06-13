@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+  
+  backend:
+    build:
+      context: ./authorization-server
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT_AS: 9000
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      CLIENT_ID: ${CLIENT_ID}
+      REDIRECT_URI: ${REDIRECT_URI}
+      REDIRECT_LOGOUT_URI: ${REDIRECT_LOGOUT_URI}
+      JWT_DURATION: ${JWT_DURATION}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+    ports:
+      - "9000:9000"
+  frontend:
+    build:
+      context: ./frontend
+      args:                        
+        VITE_AUTH_URL: ${VITE_AUTH_URL}
+        VITE_CLIENT_ID: ${VITE_CLIENT_ID}
+        VITE_REDIRECT_URI: ${VITE_REDIRECT_URI}
+        VITE_POST_LOGOUT_URI: ${VITE_POST_LOGOUT_URI}
+        VITE_SCOPE: ${VITE_SCOPE}
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+volumes:
+  db-data:
+    
